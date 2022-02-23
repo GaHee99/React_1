@@ -5,24 +5,38 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Pressable,
   TextInput,
+  ScrollView,
 } from 'react-native'
-
 import { theme } from './colors'
 
 export default function App() {
   const [working, setWorking] = useState(true)
   const [text, setText] = useState('')
-  const work = () => setWorking(true)
+  const [toDos, setToDos] = useState({})
   const travel = () => setWorking(false)
+  const work = () => setWorking(true)
   const onChangeText = (payload) => setText(payload)
+  const addToDo = () => {
+    if (text === '') {
+      return
+    }
+    const newToDos = {
+      ...toDos,
+      //아 여기서 working: working 하면 틀림
+      [Date.now()]: { text, working },
+    }
+    setToDos(newToDos)
+    setText('')
+  }
+
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       <View style={styles.header}>
         <TouchableOpacity onPress={work}>
           <Text
-            style={{ ...styles.btnText, color: working ? 'white' : theme.gray }}
+            style={{ ...styles.btnText, color: working ? 'white' : theme.grey }}
           >
             Work
           </Text>
@@ -31,7 +45,7 @@ export default function App() {
           <Text
             style={{
               ...styles.btnText,
-              color: !working ? 'white' : theme.gray,
+              color: !working ? 'white' : theme.grey,
             }}
           >
             Travel
@@ -39,12 +53,22 @@ export default function App() {
         </TouchableOpacity>
       </View>
       <TextInput
+        onSubmitEditing={addToDo}
         onChangeText={onChangeText}
+        returnKeyType="done"
         value={text}
+        placeholder={working ? 'Add a To Do' : 'Where do you want to go?'}
         style={styles.input}
-        placeholder={working ? 'Add a To do' : ' Where you want to go?'}
-        returnKeyType="send"
       />
+      <ScrollView>
+        {Object.keys(toDos).map((key) =>
+          toDos[key].working === working ? (
+            <View style={styles.toDo} key={key}>
+              <Text style={styles.toDoText}>{toDos[key].text}</Text>
+            </View>
+          ) : null,
+        )}
+      </ScrollView>
     </View>
   )
 }
@@ -56,31 +80,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
-    marginTop: 60,
-    flexDirection: 'row',
     justifyContent: 'space-between',
+    flexDirection: 'row',
+    marginTop: 100,
   },
   btnText: {
-    color: 'white',
     fontSize: 38,
     fontWeight: '600',
   },
-
   input: {
-    //height 쓰면 안된다.
-    //글씨가 안먹힘..ㅅㅂ..
     backgroundColor: 'white',
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 30,
-    marginTop: 20,
+    marginVertical: 20,
     fontSize: 18,
   },
-  //heght 떄문에 작동 x
-  Enput: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
+  toDo: {
+    backgroundColor: theme.grey,
+    marginBottom: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+  },
+  toDoText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
   },
 })
